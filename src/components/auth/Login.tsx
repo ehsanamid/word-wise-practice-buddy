@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
@@ -17,22 +16,34 @@ const Login = () => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!loginData.username.trim() || !loginData.password.trim()) {
+      toast({
+        title: "Login Failed",
+        description: "Please enter both username and password",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
+      console.log("Attempting login with:", loginData.username);
       const success = await login(loginData.username, loginData.password);
+      
       if (!success) {
         toast({
           title: "Login Failed",
-          description: "Invalid username or password",
+          description: "Invalid username or password. Please check your credentials and try again.",
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error(error);
+      console.error("Login error:", error);
       toast({
         title: "Login Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred. Please try again later.",
         variant: "destructive"
       });
     } finally {
@@ -42,6 +53,15 @@ const Login = () => {
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!signupData.username.trim() || !signupData.email.trim() || !signupData.password.trim()) {
+      toast({
+        title: "Registration Failed",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
     
     if (signupData.password !== signupData.confirmPassword) {
       toast({
@@ -59,20 +79,23 @@ const Login = () => {
       if (!success) {
         toast({
           title: "Registration Failed",
-          description: "Unable to create account",
+          description: "Unable to create account. The username may already be taken.",
           variant: "destructive"
         });
       } else {
         toast({
           title: "Registration Successful",
-          description: "Your account has been created"
+          description: "Your account has been created. You can now log in."
         });
+        // Reset form and switch to login tab
+        setSignupData({ username: '', email: '', password: '', confirmPassword: '' });
+        setActiveTab("login");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Signup error:", error);
       toast({
         title: "Registration Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred. Please try again later.",
         variant: "destructive"
       });
     } finally {

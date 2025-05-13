@@ -75,19 +75,28 @@ export async function createUser(username: string, email: string, password: stri
 }
 
 export async function authenticateUser(username: string, password: string) {
-  const { data, error } = await supabase
-    .from('tbuser')
-    .select('*')
-    .eq('username', username)
-    .eq('password', password)
-    .single();
-  
-  if (error) {
-    console.error("Authentication error:", error);
+  try {
+    const { data, error } = await supabase
+      .from('tbuser')
+      .select('*')
+      .eq('username', username)
+      .eq('password', password);
+    
+    if (error) {
+      console.error("Database error during authentication:", error);
+      return null;
+    }
+    
+    if (!data || data.length === 0) {
+      console.log("No matching user found for the provided credentials");
+      return null;
+    }
+    
+    return data[0];
+  } catch (error) {
+    console.error("Unexpected error during authentication:", error);
     return null;
   }
-  
-  return data;
 }
 
 export async function getExamplesByDifficulty(difficulty: string) {
