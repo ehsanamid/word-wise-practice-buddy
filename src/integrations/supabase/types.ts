@@ -102,7 +102,7 @@ export type Database = {
         }
         Relationships: []
       }
-      tbpractice: {
+      tblpractice: {
         Row: {
           exampleid: number | null
           id: number
@@ -123,14 +123,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "tbpractice_exampleid_fkey"
+            foreignKeyName: "tblpractice_exampleid_fkey"
             columns: ["exampleid"]
             isOneToOne: false
             referencedRelation: "tblexample"
             referencedColumns: ["exampleid"]
           },
           {
-            foreignKeyName: "tbpractice_userid_fkey"
+            foreignKeyName: "tblpractice_userid_fkey"
             columns: ["userid"]
             isOneToOne: false
             referencedRelation: "tbuser"

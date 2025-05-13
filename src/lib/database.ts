@@ -173,7 +173,7 @@ export async function getExamplesByDifficulty(difficulty: string) {
 export async function getPracticeByUser(userId: number, difficulty: string, limit = 10) {
   // Fix: Use the specific relationship name as suggested in the error
   const { data, error } = await supabase
-    .from('tbpractice')
+    .from('tblpractice')
     .select(`
       id,
       userid,
@@ -210,7 +210,7 @@ export async function getPracticeByUser(userId: number, difficulty: string, limi
 export async function savePracticeResult(userId: number, exampleId: number, score: number) {
   // First check if the practice record already exists
   const { data: existingRecord, error: fetchError } = await supabase
-    .from('tbpractice')
+    .from('tblpractice')
     .select('*')
     .eq('userid', userId)
     .eq('exampleid', exampleId)
@@ -224,7 +224,7 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
   if (existingRecord) {
     // Update existing record
     const { data, error } = await supabase
-      .from('tbpractice')
+      .from('tblpractice')
       .update({ score })
       .eq('id', existingRecord.id)
       .select()
@@ -239,7 +239,7 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
   } else {
     // Generate a new id value
     const { data: maxIdData } = await supabase
-      .from('tbpractice')
+      .from('tblpractice')
       .select('id')
       .order('id', { ascending: false })
       .limit(1)
@@ -249,7 +249,7 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
     
     // Create new record with the generated id
     const { data, error } = await supabase
-      .from('tbpractice')
+      .from('tblpractice')
       .insert({
         id: newId,
         userid: userId,
@@ -307,7 +307,7 @@ export async function getExamplesByWord(word: string) {
 export async function addExamplesToPractice(userId: number, exampleIds: number[]) {
   // Get the highest existing id
   const { data: maxIdData } = await supabase
-    .from('tbpractice')
+    .from('tblpractice')
     .select('id')
     .order('id', { ascending: false })
     .limit(1)
@@ -324,7 +324,7 @@ export async function addExamplesToPractice(userId: number, exampleIds: number[]
   }));
   
   const { data, error } = await supabase
-    .from('tbpractice')
+    .from('tblpractice')
     .insert(practiceRecords)
     .select();
   
