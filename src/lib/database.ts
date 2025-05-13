@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
@@ -32,6 +33,17 @@ export async function getUserByUsername(username: string) {
 }
 
 export async function createUser(username: string, email: string, password: string) {
+  // First check if a user with this username already exists
+  const existingUser = await getUserByUsername(username);
+  if (existingUser) {
+    toast({
+      title: "Username already exists",
+      description: "Please choose a different username",
+      variant: "destructive"
+    });
+    return null;
+  }
+
   // Generate a new userid value
   const { data: maxIdData } = await supabase
     .from('tbuser')
