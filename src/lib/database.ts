@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
@@ -92,31 +91,62 @@ export async function authenticateUser(username: string, password: string) {
 }
 
 export async function getExamplesByDifficulty(difficulty: string) {
-  // Fix: Use the specific relationship name as suggested in the error
+  console.log("Fetching examples for difficulty:", difficulty);
+  
+  // Using direct equality without nesting too many relationships
   const { data, error } = await supabase
-    .from('tblexample')
+    .from('tblword')
     .select(`
-      exampleid,
-      english,
-      persian,
-      definitionid,
-      tbldefinition!tblexample_definitionid_fkey (
+      wordid,
+      word,
+      type,
+      pronunciation,
+      tbldefinition!wordid (
+        definitionid,
         definition,
-        tblword!wordid (
-          word,
-          type,
-          pronunciation
+        tblexample!tblexample_definitionid_fkey (
+          exampleid,
+          english,
+          persian
         )
       )
     `)
-    .eq('tbldefinition.tblword.difficulty', difficulty);
+    .eq('difficulty', difficulty);
   
   if (error) {
-    console.error("Error fetching examples:", error);
+    console.error("Error fetching examples by difficulty:", error);
     return [];
   }
   
-  return data;
+  console.log("Raw examples data:", data);
+  
+  // Flatten the nested structure to get all examples with their associated word and definition
+  const examples = [];
+  
+  for (const word of data || []) {
+    for (const def of word.tbldefinition || []) {
+      for (const example of def.tblexample || []) {
+        examples.push({
+          ...example,
+          exampleid: example.exampleid,
+          english: example.english,
+          persian: example.persian,
+          definitionid: def.definitionid,
+          tbldefinition: {
+            definition: def.definition,
+            tblword: {
+              word: word.word,
+              type: word.type,
+              pronunciation: word.pronunciation
+            }
+          }
+        });
+      }
+    }
+  }
+  
+  console.log("Processed examples:", examples);
+  return examples;
 }
 
 export async function getPracticeByUser(userId: number, difficulty: string, limit = 10) {

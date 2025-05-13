@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
@@ -25,6 +24,7 @@ const Dashboard = () => {
   }, [user]);
 
   const handleDifficultyChange = (difficulty: Difficulty) => {
+    console.log("Difficulty changed to:", difficulty);
     setSelectedDifficulty(difficulty);
   };
 
@@ -72,7 +72,12 @@ const Dashboard = () => {
               </TabsList>
               
               <TabsContent value="practice" className="mt-4">
-                {user && <PracticeSession userId={user.userid} difficulty={selectedDifficulty} />}
+                {user && (
+                  <PracticeSession 
+                    userId={user.userid} 
+                    difficulty={selectedDifficulty} 
+                  />
+                )}
               </TabsContent>
               
               <TabsContent value="lookup" className="mt-4">

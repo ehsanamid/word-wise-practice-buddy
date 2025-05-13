@@ -52,30 +52,37 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({ userId, difficulty })
   const loadExample = async () => {
     setLoading(true);
     try {
+      console.log("Loading examples for difficulty:", difficulty);
+      
       // Check if the user has practice items with scores less than 1000
       const practiceItems = await getPracticeByUser(userId, difficulty, 10);
+      console.log("Practice items:", practiceItems);
       
-      if (practiceItems && practiceItems.length >= 10) {
+      if (practiceItems && practiceItems.length > 0) {
         // Randomly select one of the practice items
         const randomIndex = Math.floor(Math.random() * practiceItems.length);
         const selectedPractice = practiceItems[randomIndex] as unknown as PracticeItem;
         
+        console.log("Selected practice:", selectedPractice);
         setCurrentExample(selectedPractice.tblexample);
         setPracticeId(selectedPractice.id);
       } else {
         // Randomly select an example based on difficulty
         const examples = await getExamplesByDifficulty(difficulty);
+        console.log("Examples by difficulty:", examples);
         
         if (examples && examples.length > 0) {
           const randomIndex = Math.floor(Math.random() * examples.length);
           const selectedExample = examples[randomIndex] as unknown as Example;
           
+          console.log("Selected example:", selectedExample);
           setCurrentExample(selectedExample);
           setPracticeId(null);
         } else {
+          console.log("No examples found for difficulty:", difficulty);
           toast({
             title: "No examples found",
-            description: "No examples found for the selected difficulty level",
+            description: `No examples found for difficulty level: ${difficulty}`,
             variant: "destructive"
           });
         }
