@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { getExamplesByWord, addExamplesToPractice } from '@/lib/database';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,7 @@ type Example = {
   exampleid: number;
   english: string;
   persian: string;
-  definitionid: number;
+  definitionid?: number; // Make definitionid optional since it might not be present in all returned examples
 };
 
 type WordLookupProps = {
@@ -32,7 +33,8 @@ const WordLookup: React.FC<WordLookupProps> = ({ userId }) => {
     
     try {
       const foundExamples = await getExamplesByWord(word.trim());
-      setExamples(foundExamples);
+      // Cast the foundExamples to Example[] to handle missing definitionid
+      setExamples(foundExamples as Example[]);
       
       if (foundExamples.length === 0) {
         toast({
