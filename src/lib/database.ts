@@ -33,9 +33,24 @@ export async function getUserByUsername(username: string) {
 }
 
 export async function createUser(username: string, email: string, password: string) {
+  // Generate a new userid value
+  const { data: maxIdData } = await supabase
+    .from('tbuser')
+    .select('userid')
+    .order('userid', { ascending: false })
+    .limit(1)
+    .single();
+  
+  const newUserId = maxIdData ? maxIdData.userid + 1 : 1;
+  
   const { data, error } = await supabase
     .from('tbuser')
-    .insert([{ username, email, password }])
+    .insert({
+      userid: newUserId,
+      username,
+      email,
+      password
+    })
     .select()
     .single();
   
@@ -80,10 +95,17 @@ export async function getExamplesByDifficulty(difficulty: string) {
   const { data, error } = await supabase
     .from('tblexample')
     .select(`
-      *,
-      tbldefinition:definitionid (
-        *,
-        tblword:wordid (*)
+      exampleid,
+      english,
+      persian,
+      definitionid,
+      tbldefinition!definitionid (
+        definition,
+        tblword!wordid (
+          word,
+          type,
+          pronunciation
+        )
       )
     `)
     .eq('tbldefinition.tblword.difficulty', difficulty);
@@ -100,12 +122,22 @@ export async function getPracticeByUser(userId: number, difficulty: string, limi
   const { data, error } = await supabase
     .from('tbpractice')
     .select(`
-      *,
-      tblexample:exampleid (
-        *,
-        tbldefinition:definitionid (
-          *,
-          tblword:wordid (*)
+      id,
+      userid,
+      exampleid,
+      score,
+      tblexample!exampleid (
+        exampleid,
+        english,
+        persian,
+        definitionid,
+        tbldefinition!definitionid (
+          definition,
+          tblword!wordid (
+            word,
+            type,
+            pronunciation
+          )
         )
       )
     `)
@@ -152,10 +184,25 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
     
     return data;
   } else {
-    // Create new record
+    // Generate a new id value
+    const { data: maxIdData } = await supabase
+      .from('tbpractice')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1)
+      .single();
+    
+    const newId = maxIdData ? maxIdData.id + 1 : 1;
+    
+    // Create new record with the generated id
     const { data, error } = await supabase
       .from('tbpractice')
-      .insert([{ userid: userId, exampleid: exampleId, score }])
+      .insert({
+        id: newId,
+        userid: userId,
+        exampleid: exampleId,
+        score: score
+      })
       .select()
       .single();
     
@@ -172,10 +219,19 @@ export async function getExamplesByWord(word: string) {
   const { data, error } = await supabase
     .from('tblword')
     .select(`
-      *,
-      tbldefinition:tbldefinition (
-        *,
-        tblexample:tblexample (*)
+      wordid,
+      word,
+      type,
+      pronunciation,
+      difficulty,
+      tbldefinition!wordid (
+        definitionid,
+        definition,
+        tblexample!definitionid (
+          exampleid,
+          english,
+          persian
+        )
       )
     `)
     .ilike('word', `%${word}%`);
@@ -196,8 +252,19 @@ export async function getExamplesByWord(word: string) {
 }
 
 export async function addExamplesToPractice(userId: number, exampleIds: number[]) {
-  // Create an array of practice records
+  // Get the highest existing id
+  const { data: maxIdData } = await supabase
+    .from('tbpractice')
+    .select('id')
+    .order('id', { ascending: false })
+    .limit(1)
+    .single();
+  
+  let nextId = maxIdData ? maxIdData.id + 1 : 1;
+  
+  // Create an array of practice records with proper IDs
   const practiceRecords = exampleIds.map(exampleId => ({
+    id: nextId++,
     userid: userId,
     exampleid: exampleId,
     score: 0

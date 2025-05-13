@@ -3,29 +3,29 @@ import React, { useState, useEffect } from 'react';
 import { getExamplesByDifficulty, getPracticeByUser, savePracticeResult } from '@/lib/database';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/ui/use-toast";
 import stringSimilarity from 'string-similarity';
 import { Difficulty } from './Dashboard';
 
-// Add string-similarity package
-<lov-add-dependency>string-similarity</lov-add-dependency>
+type ExampleWord = {
+  word: string;
+  type: string;
+  pronunciation: string;
+};
+
+type ExampleDefinition = {
+  definition: string;
+  tblword?: ExampleWord;
+};
 
 type Example = {
   exampleid: number;
   english: string;
   persian: string;
   definitionid: number;
-  tbldefinition?: {
-    definition: string;
-    tblword?: {
-      word: string;
-      type: string;
-      pronunciation: string;
-    }
-  }
+  tbldefinition?: ExampleDefinition;
 };
 
 type PracticeItem = {
@@ -58,7 +58,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({ userId, difficulty })
       if (practiceItems && practiceItems.length >= 10) {
         // Randomly select one of the practice items
         const randomIndex = Math.floor(Math.random() * practiceItems.length);
-        const selectedPractice = practiceItems[randomIndex] as PracticeItem;
+        const selectedPractice = practiceItems[randomIndex] as unknown as PracticeItem;
         
         setCurrentExample(selectedPractice.tblexample);
         setPracticeId(selectedPractice.id);
@@ -68,7 +68,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({ userId, difficulty })
         
         if (examples && examples.length > 0) {
           const randomIndex = Math.floor(Math.random() * examples.length);
-          const selectedExample = examples[randomIndex] as Example;
+          const selectedExample = examples[randomIndex] as unknown as Example;
           
           setCurrentExample(selectedExample);
           setPracticeId(null);
