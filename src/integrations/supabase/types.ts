@@ -9,7 +9,156 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      tbldefinition: {
+        Row: {
+          definition: string | null
+          definitionid: number
+          wordid: number | null
+        }
+        Insert: {
+          definition?: string | null
+          definitionid: number
+          wordid?: number | null
+        }
+        Update: {
+          definition?: string | null
+          definitionid?: number
+          wordid?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tbldefinition_wordid_fkey"
+            columns: ["wordid"]
+            isOneToOne: false
+            referencedRelation: "tblword"
+            referencedColumns: ["wordid"]
+          },
+          {
+            foreignKeyName: "tbldefinition_wordid_fkey1"
+            columns: ["wordid"]
+            isOneToOne: false
+            referencedRelation: "tblword"
+            referencedColumns: ["wordid"]
+          },
+        ]
+      }
+      tblexample: {
+        Row: {
+          definitionid: number | null
+          english: string | null
+          exampleid: number
+          persian: string | null
+        }
+        Insert: {
+          definitionid?: number | null
+          english?: string | null
+          exampleid: number
+          persian?: string | null
+        }
+        Update: {
+          definitionid?: number | null
+          english?: string | null
+          exampleid?: number
+          persian?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tblexample_definitionid_fkey"
+            columns: ["definitionid"]
+            isOneToOne: false
+            referencedRelation: "tbldefinition"
+            referencedColumns: ["definitionid"]
+          },
+          {
+            foreignKeyName: "tblexample_definitionid_fkey1"
+            columns: ["definitionid"]
+            isOneToOne: false
+            referencedRelation: "tbldefinition"
+            referencedColumns: ["definitionid"]
+          },
+        ]
+      }
+      tblword: {
+        Row: {
+          difficulty: string | null
+          pronunciation: string | null
+          type: string | null
+          word: string | null
+          wordid: number
+        }
+        Insert: {
+          difficulty?: string | null
+          pronunciation?: string | null
+          type?: string | null
+          word?: string | null
+          wordid: number
+        }
+        Update: {
+          difficulty?: string | null
+          pronunciation?: string | null
+          type?: string | null
+          word?: string | null
+          wordid?: number
+        }
+        Relationships: []
+      }
+      tbpractice: {
+        Row: {
+          exampleid: number | null
+          id: number
+          score: number | null
+          userid: number | null
+        }
+        Insert: {
+          exampleid?: number | null
+          id: number
+          score?: number | null
+          userid?: number | null
+        }
+        Update: {
+          exampleid?: number | null
+          id?: number
+          score?: number | null
+          userid?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tbpractice_exampleid_fkey"
+            columns: ["exampleid"]
+            isOneToOne: false
+            referencedRelation: "tblexample"
+            referencedColumns: ["exampleid"]
+          },
+          {
+            foreignKeyName: "tbpractice_userid_fkey"
+            columns: ["userid"]
+            isOneToOne: false
+            referencedRelation: "tbuser"
+            referencedColumns: ["userid"]
+          },
+        ]
+      }
+      tbuser: {
+        Row: {
+          email: string | null
+          password: string | null
+          userid: number
+          username: string | null
+        }
+        Insert: {
+          email?: string | null
+          password?: string | null
+          userid: number
+          username?: string | null
+        }
+        Update: {
+          email?: string | null
+          password?: string | null
+          userid?: number
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
