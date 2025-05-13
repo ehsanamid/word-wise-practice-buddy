@@ -92,6 +92,7 @@ export async function authenticateUser(username: string, password: string) {
 }
 
 export async function getExamplesByDifficulty(difficulty: string) {
+  // Fix: Use the specific relationship name as suggested in the error
   const { data, error } = await supabase
     .from('tblexample')
     .select(`
@@ -99,7 +100,7 @@ export async function getExamplesByDifficulty(difficulty: string) {
       english,
       persian,
       definitionid,
-      tbldefinition!definitionid (
+      tbldefinition!tblexample_definitionid_fkey (
         definition,
         tblword!wordid (
           word,
@@ -119,6 +120,7 @@ export async function getExamplesByDifficulty(difficulty: string) {
 }
 
 export async function getPracticeByUser(userId: number, difficulty: string, limit = 10) {
+  // Fix: Use the specific relationship name as suggested in the error
   const { data, error } = await supabase
     .from('tbpractice')
     .select(`
@@ -131,7 +133,7 @@ export async function getPracticeByUser(userId: number, difficulty: string, limi
         english,
         persian,
         definitionid,
-        tbldefinition!definitionid (
+        tbldefinition!tblexample_definitionid_fkey (
           definition,
           tblword!wordid (
             word,
@@ -227,7 +229,7 @@ export async function getExamplesByWord(word: string) {
       tbldefinition!wordid (
         definitionid,
         definition,
-        tblexample!definitionid (
+        tblexample!tblexample_definitionid_fkey (
           exampleid,
           english,
           persian
