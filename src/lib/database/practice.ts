@@ -62,10 +62,13 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
     
     if (existingRecord) {
       console.log("Updating existing practice record:", existingRecord);
-      // Update existing record
+      // Update existing record - ADD the new score to the existing score (accumulative)
+      const updatedScore = (existingRecord.score || 0) + score;
+      console.log(`Adding score ${score} to existing score ${existingRecord.score} = ${updatedScore}`);
+      
       const { data, error } = await supabase
         .from('tblpractice')
-        .update({ score })
+        .update({ score: updatedScore })
         .eq('id', existingRecord.id)
         .select()
         .single();

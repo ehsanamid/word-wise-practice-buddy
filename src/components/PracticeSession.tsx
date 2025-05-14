@@ -114,7 +114,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({ userId, difficulty })
           console.log("Practice result saved successfully:", result);
           toast({
             title: "Progress saved",
-            description: `Your score (${score}%) has been saved`,
+            description: `Your score (${score}%) has been added to your total progress`,
           });
         } else {
           console.error("Failed to save practice result");
