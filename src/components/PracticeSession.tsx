@@ -3,37 +3,20 @@ import React, { useState, useEffect } from 'react';
 import { getExamplesByDifficulty, getPracticeByUser, savePracticeResult } from '@/lib/database';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/ui/use-toast";
 import stringSimilarity from 'string-similarity';
 import { Difficulty } from './Dashboard';
+import { Example } from './practice/types';
 
-type ExampleWord = {
-  word: string;
-  type: string;
-  pronunciation: string;
-};
-
-type ExampleDefinition = {
-  definition: string;
-  tblword?: ExampleWord;
-};
-
-type Example = {
-  exampleid: number;
-  english: string;
-  persian: string;
-  definitionid: number;
-  tbldefinition?: ExampleDefinition;
-};
-
-type PracticeItem = {
-  id: number;
-  exampleid: number;
-  score: number;
-  tblexample: Example;
-};
+// Import all the components we created
+import TranslationPrompt from './practice/TranslationPrompt';
+import WordHint from './practice/WordHint';
+import CorrectAnswer from './practice/CorrectAnswer';
+import TranslationInput from './practice/TranslationInput';
+import SimilarityScore from './practice/SimilarityScore';
+import ActionButtons from './practice/ActionButtons';
+import LoadingSpinner from './practice/LoadingSpinner';
+import EmptyState from './practice/EmptyState';
 
 type PracticeSessionProps = {
   userId: number;
@@ -61,7 +44,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({ userId, difficulty })
       if (practiceItems && practiceItems.length > 0) {
         // Randomly select one of the practice items
         const randomIndex = Math.floor(Math.random() * practiceItems.length);
-        const selectedPractice = practiceItems[randomIndex] as unknown as PracticeItem;
+        const selectedPractice = practiceItems[randomIndex] as any;
         
         console.log("Selected practice:", selectedPractice);
         setCurrentExample(selectedPractice.tblexample);
@@ -73,7 +56,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({ userId, difficulty })
         
         if (examples && examples.length > 0) {
           const randomIndex = Math.floor(Math.random() * examples.length);
-          const selectedExample = examples[randomIndex] as unknown as Example;
+          const selectedExample = examples[randomIndex] as any;
           
           console.log("Selected example:", selectedExample);
           setCurrentExample(selectedExample);
@@ -162,6 +145,10 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({ userId, difficulty })
     loadExample();
   };
   
+  const handleUserAnswerChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setUserAnswer(e.target.value);
+  };
+  
   return (
     <Card className="w-full">
       <CardHeader>
@@ -174,92 +161,51 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({ userId, difficulty })
       </CardHeader>
       
       {loading ? (
-        <CardContent className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <CardContent>
+          <LoadingSpinner />
         </CardContent>
       ) : currentExample ? (
         <>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <h3 className="font-medium text-gray-500">Translate this phrase:</h3>
-              <div className="p-4 bg-blue-50 rounded-md text-xl rtl" dir="rtl">
-                {currentExample.persian}
-              </div>
-            </div>
+            <TranslationPrompt persian={currentExample.persian} />
             
-            {showWord && currentExample.tbldefinition?.tblword && (
-              <div className="p-4 bg-yellow-50 rounded-md">
-                <h3 className="font-medium text-gray-500 mb-2">Key Word:</h3>
-                <div className="flex flex-col gap-1">
-                  <p className="text-xl font-semibold">{currentExample.tbldefinition.tblword.word}</p>
-                  {currentExample.tbldefinition.tblword.type && (
-                    <p className="text-sm text-gray-500">Type: {currentExample.tbldefinition.tblword.type}</p>
-                  )}
-                  {currentExample.tbldefinition.tblword.pronunciation && (
-                    <p className="text-sm text-gray-500">Pronunciation: {currentExample.tbldefinition.tblword.pronunciation}</p>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {showAnswer && (
-              <div className="p-4 bg-green-50 rounded-md">
-                <h3 className="font-medium text-gray-500 mb-1">Correct Translation:</h3>
-                <p className="text-xl">{currentExample.english}</p>
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <h3 className="font-medium text-gray-500">Your Translation:</h3>
-              <Textarea
-                placeholder="Type your English translation here..."
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                rows={3}
-                disabled={similarityScore !== null}
+            {currentExample.tbldefinition?.tblword && (
+              <WordHint 
+                word={currentExample.tbldefinition.tblword.word}
+                type={currentExample.tbldefinition.tblword.type}
+                pronunciation={currentExample.tbldefinition.tblword.pronunciation}
+                show={showWord}
               />
-            </div>
-            
-            {similarityScore !== null && (
-              <div className="space-y-2">
-                <h3 className="font-medium text-gray-500">Similarity Score:</h3>
-                <Progress value={similarityScore} className="h-3" />
-                <p className="text-right font-medium">{similarityScore}%</p>
-              </div>
             )}
+            
+            <CorrectAnswer 
+              english={currentExample.english} 
+              show={showAnswer} 
+            />
+            
+            <TranslationInput 
+              value={userAnswer}
+              onChange={handleUserAnswerChange}
+              disabled={similarityScore !== null}
+            />
+            
+            <SimilarityScore score={similarityScore} />
           </CardContent>
           
-          <CardFooter className="flex flex-wrap gap-2 justify-between">
-            <div className="space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowWord(true)}
-                disabled={showWord}
-              >
-                Show Word
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowAnswer(true)}
-                disabled={showAnswer}
-              >
-                Show Answer
-              </Button>
-            </div>
-            
-            <div>
-              <Button
-                onClick={handleSubmit}
-                disabled={!userAnswer.trim() || similarityScore !== null}
-              >
-                Check Answer
-              </Button>
-            </div>
+          <CardFooter>
+            <ActionButtons 
+              showWord={showWord}
+              showAnswer={showAnswer}
+              onShowWord={() => setShowWord(true)}
+              onShowAnswer={() => setShowAnswer(true)}
+              onSubmit={handleSubmit}
+              disableSubmit={!userAnswer.trim() || similarityScore !== null}
+            />
           </CardFooter>
         </>
       ) : (
         <CardContent>
-          <p className="text-center py-8 text-gray-500">No examples available. Try another difficulty level.</p>
+          <EmptyState />
         </CardContent>
       )}
     </Card>
