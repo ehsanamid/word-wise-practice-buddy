@@ -124,9 +124,30 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({ userId, difficulty })
     // Save the practice result
     const saveScore = async () => {
       try {
-        await savePracticeResult(userId, currentExample.exampleid, score);
+        console.log(`Saving score ${score} for example ${currentExample.exampleid}`);
+        const result = await savePracticeResult(userId, currentExample.exampleid, score);
+        
+        if (result) {
+          console.log("Practice result saved successfully:", result);
+          toast({
+            title: "Progress saved",
+            description: `Your score (${score}%) has been saved`,
+          });
+        } else {
+          console.error("Failed to save practice result");
+          toast({
+            title: "Error saving progress",
+            description: "Your score could not be saved",
+            variant: "destructive"
+          });
+        }
       } catch (error) {
         console.error('Error saving practice result:', error);
+        toast({
+          title: "Error saving progress",
+          description: "An error occurred while saving your score",
+          variant: "destructive"
+        });
       }
     };
     

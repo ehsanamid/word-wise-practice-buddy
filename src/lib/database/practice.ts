@@ -1,5 +1,5 @@
 
-import { supabase } from "./client";
+import { supabase, toast } from "./client";
 
 export async function getPracticeByUser(userId: number, difficulty: string, limit = 10) {
   // Fix: Use the specific relationship name as suggested in the error
@@ -39,63 +39,94 @@ export async function getPracticeByUser(userId: number, difficulty: string, limi
 }
 
 export async function savePracticeResult(userId: number, exampleId: number, score: number) {
-  // First check if the practice record already exists
-  const { data: existingRecord, error: fetchError } = await supabase
-    .from('tblpractice')
-    .select('*')
-    .eq('userid', userId)
-    .eq('exampleid', exampleId)
-    .single();
+  console.log(`Inside savePracticeResult: userId=${userId}, exampleId=${exampleId}, score=${score}`);
   
-  if (fetchError && fetchError.code !== 'PGRST116') {
-    console.error("Error checking for existing practice record:", fetchError);
+  try {
+    // First check if the practice record already exists
+    const { data: existingRecord, error: fetchError } = await supabase
+      .from('tblpractice')
+      .select('*')
+      .eq('userid', userId)
+      .eq('exampleid', exampleId)
+      .single();
+    
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error("Error checking for existing practice record:", fetchError);
+      toast({
+        title: "Database Error",
+        description: "Could not check for existing practice record", 
+        variant: "destructive"
+      });
+      return null;
+    }
+    
+    if (existingRecord) {
+      console.log("Updating existing practice record:", existingRecord);
+      // Update existing record
+      const { data, error } = await supabase
+        .from('tblpractice')
+        .update({ score })
+        .eq('id', existingRecord.id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error("Error updating practice record:", error);
+        toast({
+          title: "Update Error",
+          description: "Could not update your practice score", 
+          variant: "destructive"
+        });
+        return null;
+      }
+      
+      console.log("Updated practice record:", data);
+      return data;
+    } else {
+      console.log("Creating new practice record for exampleId:", exampleId);
+      // Generate a new id value
+      const { data: maxIdData, error: maxIdError } = await supabase
+        .from('tblpractice')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (maxIdError && maxIdError.code !== 'PGRST116') {
+        console.error("Error getting max ID:", maxIdError);
+      }
+      
+      const newId = maxIdData ? maxIdData.id + 1 : 1;
+      console.log("Generated new ID for practice record:", newId);
+      
+      // Create new record with the generated id
+      const { data, error } = await supabase
+        .from('tblpractice')
+        .insert({
+          id: newId,
+          userid: userId,
+          exampleid: exampleId,
+          score: score
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error("Error saving practice record:", error);
+        toast({
+          title: "Insert Error",
+          description: "Could not save your practice score", 
+          variant: "destructive"
+        });
+        return null;
+      }
+      
+      console.log("Created new practice record:", data);
+      return data;
+    }
+  } catch (err) {
+    console.error("Unexpected error in savePracticeResult:", err);
     return null;
-  }
-  
-  if (existingRecord) {
-    // Update existing record
-    const { data, error } = await supabase
-      .from('tblpractice')
-      .update({ score })
-      .eq('id', existingRecord.id)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error("Error updating practice record:", error);
-      return null;
-    }
-    
-    return data;
-  } else {
-    // Generate a new id value
-    const { data: maxIdData } = await supabase
-      .from('tblpractice')
-      .select('id')
-      .order('id', { ascending: false })
-      .limit(1)
-      .single();
-    
-    const newId = maxIdData ? maxIdData.id + 1 : 1;
-    
-    // Create new record with the generated id
-    const { data, error } = await supabase
-      .from('tblpractice')
-      .insert({
-        id: newId,
-        userid: userId,
-        exampleid: exampleId,
-        score: score
-      })
-      .select()
-      .single();
-    
-    if (error) {
-      console.error("Error saving practice record:", error);
-      return null;
-    }
-    
-    return data;
   }
 }
 
