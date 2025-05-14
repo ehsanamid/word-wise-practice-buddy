@@ -78,6 +78,42 @@ export type Database = {
           },
         ]
       }
+      tblpractice: {
+        Row: {
+          exampleid: number | null
+          id: number
+          score: number | null
+          userid: number | null
+        }
+        Insert: {
+          exampleid?: number | null
+          id: number
+          score?: number | null
+          userid?: number | null
+        }
+        Update: {
+          exampleid?: number | null
+          id?: number
+          score?: number | null
+          userid?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tbpractice_exampleid_fkey"
+            columns: ["exampleid"]
+            isOneToOne: false
+            referencedRelation: "tblexample"
+            referencedColumns: ["exampleid"]
+          },
+          {
+            foreignKeyName: "tbpractice_userid_fkey"
+            columns: ["userid"]
+            isOneToOne: false
+            referencedRelation: "tbuser"
+            referencedColumns: ["userid"]
+          },
+        ]
+      }
       tblword: {
         Row: {
           difficulty: string | null
@@ -101,42 +137,6 @@ export type Database = {
           wordid?: number
         }
         Relationships: []
-      }
-      tblpractice: {
-        Row: {
-          exampleid: number | null
-          id: number
-          score: number | null
-          userid: number | null
-        }
-        Insert: {
-          exampleid?: number | null
-          id: number
-          score?: number | null
-          userid?: number | null
-        }
-        Update: {
-          exampleid?: number | null
-          id?: number
-          score?: number | null
-          userid?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tblpractice_exampleid_fkey"
-            columns: ["exampleid"]
-            isOneToOne: false
-            referencedRelation: "tblexample"
-            referencedColumns: ["exampleid"]
-          },
-          {
-            foreignKeyName: "tblpractice_userid_fkey"
-            columns: ["userid"]
-            isOneToOne: false
-            referencedRelation: "tbuser"
-            referencedColumns: ["userid"]
-          },
-        ]
       }
       tbuser: {
         Row: {

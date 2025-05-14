@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
@@ -111,63 +110,109 @@ export async function authenticateUser(username: string, password: string) {
   }
 }
 
-export async function getExamplesByDifficulty(difficulty: string) {
-  console.log("Fetching examples for difficulty:", difficulty);
+export async function getRandomWordByDifficulty(difficulty: string) {
+  console.log("Fetching random word for difficulty:", difficulty);
   
-  // Using direct equality without nesting too many relationships
   const { data, error } = await supabase
     .from('tblword')
-    .select(`
-      wordid,
-      word,
-      type,
-      pronunciation,
-      tbldefinition!wordid (
-        definitionid,
-        definition,
-        tblexample!tblexample_definitionid_fkey (
-          exampleid,
-          english,
-          persian
-        )
-      )
-    `)
+    .select('wordid, word, type, pronunciation')
     .eq('difficulty', difficulty);
   
   if (error) {
-    console.error("Error fetching examples by difficulty:", error);
+    console.error("Error fetching words by difficulty:", error);
+    return null;
+  }
+  
+  if (!data || data.length === 0) {
+    console.log("No words found for difficulty:", difficulty);
+    return null;
+  }
+  
+  // Randomly select one word
+  const randomIndex = Math.floor(Math.random() * data.length);
+  return data[randomIndex];
+}
+
+export async function getRandomDefinitionByWordId(wordId: number) {
+  console.log("Fetching random definition for wordId:", wordId);
+  
+  const { data, error } = await supabase
+    .from('tbldefinition')
+    .select('definitionid, definition')
+    .eq('wordid', wordId);
+  
+  if (error) {
+    console.error("Error fetching definitions by wordId:", error);
+    return null;
+  }
+  
+  if (!data || data.length === 0) {
+    console.log("No definitions found for wordId:", wordId);
+    return null;
+  }
+  
+  // Randomly select one definition
+  const randomIndex = Math.floor(Math.random() * data.length);
+  return data[randomIndex];
+}
+
+export async function getRandomExampleByDefinitionId(definitionId: number) {
+  console.log("Fetching random example for definitionId:", definitionId);
+  
+  const { data, error } = await supabase
+    .from('tblexample')
+    .select('exampleid, english, persian')
+    .eq('definitionid', definitionId);
+  
+  if (error) {
+    console.error("Error fetching examples by definitionId:", error);
+    return null;
+  }
+  
+  if (!data || data.length === 0) {
+    console.log("No examples found for definitionId:", definitionId);
+    return null;
+  }
+  
+  // Randomly select one example
+  const randomIndex = Math.floor(Math.random() * data.length);
+  return data[randomIndex];
+}
+
+export async function getExamplesByDifficulty(difficulty: string) {
+  console.log("Using new implementation for getExamplesByDifficulty:", difficulty);
+  
+  const randomWord = await getRandomWordByDifficulty(difficulty);
+  if (!randomWord) {
     return [];
   }
   
-  console.log("Raw examples data:", data);
-  
-  // Flatten the nested structure to get all examples with their associated word and definition
-  const examples = [];
-  
-  for (const word of data || []) {
-    for (const def of word.tbldefinition || []) {
-      for (const example of def.tblexample || []) {
-        examples.push({
-          ...example,
-          exampleid: example.exampleid,
-          english: example.english,
-          persian: example.persian,
-          definitionid: def.definitionid,
-          tbldefinition: {
-            definition: def.definition,
-            tblword: {
-              word: word.word,
-              type: word.type,
-              pronunciation: word.pronunciation
-            }
-          }
-        });
-      }
-    }
+  const randomDefinition = await getRandomDefinitionByWordId(randomWord.wordid);
+  if (!randomDefinition) {
+    return [];
   }
   
-  console.log("Processed examples:", examples);
-  return examples;
+  const randomExample = await getRandomExampleByDefinitionId(randomDefinition.definitionid);
+  if (!randomExample) {
+    return [];
+  }
+  
+  // Format the result to match the expected structure of the old function
+  return [{
+    ...randomExample,
+    exampleid: randomExample.exampleid,
+    english: randomExample.english,
+    persian: randomExample.persian,
+    definitionid: randomDefinition.definitionid,
+    tbldefinition: {
+      definition: randomDefinition.definition,
+      tblword: {
+        word: randomWord.word,
+        type: randomWord.type,
+        pronunciation: randomWord.pronunciation
+      }
+    }
+  }];
 }
 
 export async function getPracticeByUser(userId: number, difficulty: string, limit = 10) {
