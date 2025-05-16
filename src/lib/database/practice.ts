@@ -17,7 +17,7 @@ export async function getPracticeByUser(userId: number, difficulty: string, limi
         definitionid,
         tbldefinition!tblexample_definitionid_fkey (
           definition,
-          tblword!wordid (
+          tblword!tbldefinition_wordid_fkey (
             word,
             type,
             pronunciation
@@ -87,26 +87,11 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
       return data;
     } else {
       console.log("Creating new practice record for exampleId:", exampleId);
-      // Generate a new id value
-      const { data: maxIdData, error: maxIdError } = await supabase
-        .from('tblpractice')
-        .select('id')
-        .order('id', { ascending: false })
-        .limit(1)
-        .single();
       
-      if (maxIdError && maxIdError.code !== 'PGRST116') {
-        console.error("Error getting max ID:", maxIdError);
-      }
-      
-      const newId = maxIdData ? maxIdData.id + 1 : 1;
-      console.log("Generated new ID for practice record:", newId);
-      
-      // Create new record with the generated id
+      // Create new record with a direct insert (don't try to generate ID manually)
       const { data, error } = await supabase
         .from('tblpractice')
         .insert({
-          id: newId,
           userid: userId,
           exampleid: exampleId,
           score: score
@@ -134,19 +119,8 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
 }
 
 export async function addExamplesToPractice(userId: number, exampleIds: number[]) {
-  // Get the highest existing id
-  const { data: maxIdData } = await supabase
-    .from('tblpractice')
-    .select('id')
-    .order('id', { ascending: false })
-    .limit(1)
-    .single();
-  
-  let nextId = maxIdData ? maxIdData.id + 1 : 1;
-  
-  // Create an array of practice records with proper IDs
+  // Create an array of practice records without manually setting IDs
   const practiceRecords = exampleIds.map(exampleId => ({
-    id: nextId++,
     userid: userId,
     exampleid: exampleId,
     score: 0
