@@ -88,10 +88,32 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
     } else {
       console.log("Creating new practice record for exampleId:", exampleId);
       
-      // Create new record with a direct insert (don't try to generate ID manually)
+      // Get the next available ID
+      const { data: maxIdData, error: maxIdError } = await supabase
+        .from('tblpractice')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (maxIdError && maxIdError.code !== 'PGRST116') {
+        console.error("Error getting max ID:", maxIdError);
+        toast({
+          title: "Database Error",
+          description: "Could not generate a new practice ID", 
+          variant: "destructive"
+        });
+        return null;
+      }
+      
+      const newId = maxIdData ? maxIdData.id + 1 : 1;
+      console.log("Generated new ID for practice record:", newId);
+      
+      // Create new record with the required ID
       const { data, error } = await supabase
         .from('tblpractice')
         .insert({
+          id: newId, // Add the ID here
           userid: userId,
           exampleid: exampleId,
           score: score
@@ -119,8 +141,29 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
 }
 
 export async function addExamplesToPractice(userId: number, exampleIds: number[]) {
-  // Create an array of practice records without manually setting IDs
+  // Get the highest existing id
+  const { data: maxIdData, error: maxIdError } = await supabase
+    .from('tblpractice')
+    .select('id')
+    .order('id', { ascending: false })
+    .limit(1)
+    .single();
+  
+  if (maxIdError && maxIdError.code !== 'PGRST116') {
+    console.error("Error getting max ID:", maxIdError);
+    toast({
+      title: "Database Error",
+      description: "Could not generate new practice IDs", 
+      variant: "destructive"
+    });
+    return null;
+  }
+  
+  let nextId = maxIdData ? maxIdData.id + 1 : 1;
+  
+  // Create an array of practice records with proper IDs
   const practiceRecords = exampleIds.map(exampleId => ({
+    id: nextId++, // Add ID for each record
     userid: userId,
     exampleid: exampleId,
     score: 0
@@ -133,6 +176,11 @@ export async function addExamplesToPractice(userId: number, exampleIds: number[]
   
   if (error) {
     console.error("Error adding examples to practice:", error);
+    toast({
+      title: "Insert Error",
+      description: "Could not add examples to practice", 
+      variant: "destructive"
+    });
     return null;
   }
   
