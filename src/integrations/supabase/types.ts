@@ -81,38 +81,59 @@ export type Database = {
       tblpractice: {
         Row: {
           exampleid: number | null
-          id: number
+          id: string
           score: number | null
           userid: number | null
         }
         Insert: {
           exampleid?: number | null
-          id: number
+          id: string
           score?: number | null
           userid?: number | null
         }
         Update: {
           exampleid?: number | null
-          id?: number
+          id?: string
           score?: number | null
           userid?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "tblpractice_exampleid_fkey"
+            foreignKeyName: "tbpractice_exampleid_fkey"
             columns: ["exampleid"]
             isOneToOne: false
             referencedRelation: "tblexample"
             referencedColumns: ["exampleid"]
           },
           {
-            foreignKeyName: "tblpractice_userid_fkey"
+            foreignKeyName: "tbpractice_userid_fkey"
             columns: ["userid"]
             isOneToOne: false
             referencedRelation: "tbluser"
             referencedColumns: ["userid"]
           },
         ]
+      }
+      tbluser: {
+        Row: {
+          email: string | null
+          password: string | null
+          userid: number
+          username: string | null
+        }
+        Insert: {
+          email?: string | null
+          password?: string | null
+          userid: number
+          username?: string | null
+        }
+        Update: {
+          email?: string | null
+          password?: string | null
+          userid?: number
+          username?: string | null
+        }
+        Relationships: []
       }
       tblword: {
         Row: {
@@ -135,27 +156,6 @@ export type Database = {
           type?: string | null
           word?: string | null
           wordid?: number
-        }
-        Relationships: []
-      }
-      tbluser: {
-        Row: {
-          email: string | null
-          password: string | null
-          userid: number
-          username: string | null
-        }
-        Insert: {
-          email?: string | null
-          password?: string | null
-          userid: number
-          username?: string | null
-        }
-        Update: {
-          email?: string | null
-          password?: string | null
-          userid?: number
-          username?: string | null
         }
         Relationships: []
       }
