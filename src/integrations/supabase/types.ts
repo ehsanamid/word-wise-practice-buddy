@@ -109,7 +109,7 @@ export type Database = {
             foreignKeyName: "tblpractice_userid_fkey"
             columns: ["userid"]
             isOneToOne: false
-            referencedRelation: "tbuser"
+            referencedRelation: "tbluser"
             referencedColumns: ["userid"]
           },
         ]
@@ -138,7 +138,7 @@ export type Database = {
         }
         Relationships: []
       }
-      tbuser: {
+      tbluser: {
         Row: {
           email: string | null
           password: string | null

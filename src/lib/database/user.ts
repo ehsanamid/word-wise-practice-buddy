@@ -3,7 +3,7 @@ import { supabase, toast } from "./client";
 
 export async function getUserById(userId: number) {
   const { data, error } = await supabase
-    .from('tbuser')
+    .from('tbluser')
     .select('*')
     .eq('userid', userId)
     .single();
@@ -18,7 +18,7 @@ export async function getUserById(userId: number) {
 
 export async function getUserByUsername(username: string) {
   const { data, error } = await supabase
-    .from('tbuser')
+    .from('tbluser')
     .select('*')
     .eq('username', username)
     .single();
@@ -45,7 +45,7 @@ export async function createUser(username: string, email: string, password: stri
 
   // Generate a new userid value
   const { data: maxIdData } = await supabase
-    .from('tbuser')
+    .from('tbluser')
     .select('userid')
     .order('userid', { ascending: false })
     .limit(1)
@@ -54,7 +54,7 @@ export async function createUser(username: string, email: string, password: stri
   const newUserId = maxIdData ? maxIdData.userid + 1 : 1;
   
   const { data, error } = await supabase
-    .from('tbuser')
+    .from('tbluser')
     .insert({
       userid: newUserId,
       username,
@@ -88,7 +88,7 @@ export async function createUser(username: string, email: string, password: stri
 export async function authenticateUser(username: string, password: string) {
   try {
     const { data, error } = await supabase
-      .from('tbuser')
+      .from('tbluser')
       .select('*')
       .eq('username', username)
       .eq('password', password);
