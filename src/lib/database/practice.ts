@@ -1,5 +1,7 @@
 
-import { supabase, toast } from "./client";
+import { supabase } from "./client";
+import { toast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 export async function getPracticeByUser(userId: number, difficulty: string, limit = 10) {
   // Fix: Use the specific relationship name as suggested in the error
@@ -88,10 +90,15 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
     } else {
       console.log("Creating new practice record for exampleId:", exampleId);
       
-      // Create new record - with UUID ID
+      // Generate a new UUID for the record
+      const newId = uuidv4();
+      console.log("Generated UUID for new practice record:", newId);
+      
+      // Create new record with the UUID
       const { data, error } = await supabase
         .from('tblpractice')
         .insert({
+          id: newId,
           userid: userId,
           exampleid: exampleId,
           score: score
@@ -119,9 +126,9 @@ export async function savePracticeResult(userId: number, exampleId: number, scor
 }
 
 export async function addExamplesToPractice(userId: number, exampleIds: number[]) {
-  // Create an array of practice records without manually specifying IDs
-  // Let Supabase/PostgreSQL generate the UUIDs automatically
+  // Create an array of practice records with UUIDs
   const practiceRecords = exampleIds.map(exampleId => ({
+    id: uuidv4(), // Generate a UUID for each record
     userid: userId,
     exampleid: exampleId,
     score: 0
